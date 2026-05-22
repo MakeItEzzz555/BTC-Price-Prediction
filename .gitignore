@@ -1,0 +1,35 @@
+.env
+.env.*
+!.env.example
+apiKeys.txt
+apiKeys*
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+news_cache.json
+open_interest_cache.json
+predictions.log
+runlogs/
+*.log
+*.out
+*.plist.bak
+
+# Local assistant/editor metadata
+.claude/
+CLAUDE.md
+
+# Training, tuning, and monitoring artifacts excluded from the submitted app repo
+docs/
+models/
+*.pkl
+train_model.py
+evaluate_accuracy.py
+tests/
+launchd/
+scripts/

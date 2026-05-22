@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BTC Predictor Console</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+</head>
+<body>
+  <div class="backdrop"></div>
+  <main class="shell">
+    <section class="hero">
+      <p class="eyebrow">BTC Predictor</p>
+      <h1>Rule-Based Forecast Desk</h1>
+      <p class="lede">
+        This site runs the current production-style predictor only. Shadow ML is disabled here.
+      </p>
+      <form method="post" class="control-panel">
+        <div class="segmented">
+          <label class="segment">
+            <input type="radio" name="hours" value="1" {% if selected_hours == 1.0 %}checked{% endif %}>
+            <span>1h Horizon</span>
+          </label>
+          <label class="segment">
+            <input type="radio" name="hours" value="4" {% if selected_hours == 4.0 %}checked{% endif %}>
+            <span>4h Horizon</span>
+          </label>
+        </div>
+        <button class="run-button" type="submit">Run Current Engine</button>
+      </form>
+      {% if error %}
+      <div class="status-card status-error">
+        <strong>Request failed.</strong>
+        <span>{{ error }}</span>
+      </div>
+      {% elif prediction %}
+      <div class="status-card status-ok">
+        <strong>Prediction generated.</strong>
+        <span>{{ generated_at.strftime('%Y-%m-%d %H:%M:%S') }} UTC</span>
+      </div>
+      {% endif %}
+    </section>
+
+    <section class="grid">
+      <article class="panel spotlight {% if prediction %}signal-{{ prediction.signal|lower }}{% endif %}">
+        <div class="panel-head">
+          <p class="panel-kicker">Live Output</p>
+          <h2>{% if prediction %}{{ prediction.signal }}{% else %}Ready{% endif %}</h2>
+        </div>
+        {% if prediction %}
+        <div class="headline-metrics">
+          <div>
+            <span>Confidence</span>
+            <strong>{{ prediction.confidence }}</strong>
+          </div>
+          <div>
+            <span>Composite</span>
+            <strong>{{ "%+.1f"|format(prediction.composite_score) }}</strong>
+          </div>
+          <div>
+            <span>BTC Spot</span>
+            <strong>${{ "{:,.2f}".format(prediction.current_price) }}</strong>
+          </div>
+        </div>
+        <div class="range-band">
+          <span>Projected range</span>
+          <strong>${{ "{:,.2f}".format(prediction.price_low) }} to ${{ "{:,.2f}".format(prediction.price_high) }}</strong>
+        </div>
+        {% if prediction.warnings %}
+        <div class="notice-list">
+          {% for item in prediction.warnings %}
+          <p>{{ item }}</p>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% if prediction.conflicts %}
+        <div class="notice-list notice-conflict">
+          {% for item in prediction.conflicts %}
+          <p>{{ item }}</p>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% else %}
+        <p class="empty-state">Choose a horizon and run the current predictor to populate this panel.</p>
+        {% endif %}
+      </article>
+
+      <article class="panel">
+        <div class="panel-head">
+          <p class="panel-kicker">Accuracy Snapshot</p>
+          <h2>Current Log Summary</h2>
+        </div>
+        <div class="summary-grid">
+          <div class="summary-card">
+            <span>1h direction hit</span>
+            <strong>{{ "{:.1%}".format(summary_1h.direction_hit_rate) }}</strong>
+            <small>{{ summary_1h.count }} resolved</small>
+          </div>
+          <div class="summary-card">
+            <span>4h direction hit</span>
+            <strong>{{ "{:.1%}".format(summary_4h.direction_hit_rate) }}</strong>
+            <small>{{ summary_4h.count }} resolved</small>
+          </div>
+          <div class="summary-card">
+            <span>1h beat hold</span>
+            <strong>{{ "{:.1%}".format(summary_1h.baseline_beat_rate) }}</strong>
+            <small>{{ summary_1h.sample_status }}</small>
+          </div>
+          <div class="summary-card">
+            <span>4h beat hold</span>
+            <strong>{{ "{:.1%}".format(summary_4h.baseline_beat_rate) }}</strong>
+            <small>{{ summary_4h.sample_status }}</small>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel full-span">
+        <div class="panel-head">
+          <p class="panel-kicker">Factor Breakdown</p>
+          <h2>Current Engine Inputs</h2>
+        </div>
+        {% if prediction %}
+        <div class="factor-grid">
+          {% for factor in prediction.factors %}
+          <section class="factor-card {% if not factor.available %}factor-offline{% endif %}">
+            <header>
+              <h3>{{ factor.display_name }}</h3>
+              <span>{{ "live" if factor.available else "unavailable" }}</span>
+            </header>
+            <div class="factor-metrics">
+              <div><span>Score</span><strong>{{ "%+.1f"|format(factor.score) }}</strong></div>
+              <div><span>Weight</span><strong>{{ "{:.1f}%".format(factor.weight) }}</strong></div>
+            </div>
+            <div class="signals">
+              {% for item in factor.signals %}
+              <p>{{ item }}</p>
+              {% endfor %}
+            </div>
+          </section>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="empty-state">The factor cards appear after a run.</p>
+        {% endif %}
+      </article>
+
+      <article class="panel full-span">
+        <div class="panel-head">
+          <p class="panel-kicker">Recent Log</p>
+          <h2>Latest Stored Predictions</h2>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Regime</th>
+                <th>Horizon</th>
+                <th>Signal</th>
+                <th>Confidence</th>
+                <th>Price</th>
+                <th>Range</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in recent_predictions %}
+              <tr>
+                <td>{{ row.timestamp }}</td>
+                <td>{{ row.regime_tag }}</td>
+                <td>{{ row.horizon_hours }}h</td>
+                <td>{{ row.signal }}</td>
+                <td>{{ row.confidence }}</td>
+                <td>${{ "{:,.2f}".format(row.price or 0) }}</td>
+                <td>${{ "{:,.2f}".format((row.range or [0,0])[0]) }} to ${{ "{:,.2f}".format((row.range or [0,0])[1]) }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

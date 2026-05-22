@@ -1,0 +1,33 @@
+{
+  "prediction_hours": 4,
+  "accuracy_neutral_band_pct": 0.75,
+  "backfill_limit_per_run": 10,
+  "news_min_sentiment_magnitude": 0.05,
+  "news_vader_baseline_correction": -0.15,
+  "short_horizon_stale_market_data_hours": 30,
+  "weights": {
+    "crypto_market": 30,
+    "funding_rate": 20,
+    "us_policy": 18,
+    "geopolitics": 15,
+    "ai_chip_stocks": 10,
+    "oil_gold": 7,
+    "open_interest": 0
+  },
+  "binance_futures_symbol": "BTCUSDT",
+  "stock_tickers": ["NVDA", "AMD", "TSM", "AAPL", "INTC", "MSFT", "GOOGL"],
+  "commodity_tickers": {"gold": "GC=F", "oil": "CL=F"},
+  "monitor_interval_minutes": 30,
+  "ml_shadow_model": "models/btc_4h_core_v2_shadow_20260425.pkl",
+  "news_keywords": {
+    "us_policy": [
+      "federal reserve", "interest rate", "crypto regulation",
+      "SEC crypto", "executive order", "trade war", "tariff",
+      "bitcoin ban", "crypto bill", "stablecoin"
+    ],
+    "geopolitics": [
+      "war", "military", "invasion", "sanctions", "NATO",
+      "missile", "conflict", "ceasefire", "nuclear", "troops"
+    ]
+  }
+}
