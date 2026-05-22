@@ -139,7 +139,7 @@ The `.gitignore` excludes local/generated files such as:
 - monitoring/automation files
 - training and evaluation scripts
 
-This keeps the repository focused on the runnable Flask application required for submission.
+This keeps the repository focused on the runnable Flask application only excluding the fine tuning model stage.
 
 ## Notes
 
