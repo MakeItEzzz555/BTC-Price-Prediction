@@ -30,6 +30,14 @@ The submitted version contains only the working web application and runtime file
     └── app.css             # Dashboard styling
 ```
 
+## Preview
+
+The locally running Flask dashboard after a real engine run using public market endpoints, followed by its factor inputs. Unavailable news factors remain explicitly marked; no API keys or trading account were used.
+
+![Prediction dashboard](docs/screenshots/prediction-dashboard.png)
+
+![Engine inputs](docs/screenshots/engine-inputs.png)
+
 ## Requirements
 
 - Python 3.10 or newer
